@@ -13,6 +13,9 @@ const DOOR_TYPES = {
 	SALOON: 'saloon'
 }
 
+// Add timer constants at the top with other configurations
+const DOOR_OPEN_TIME = 3.0  // Time in seconds door stays open
+
 const DOOR_DIRECTIONS = {
 	INWARD: 'inward',
 	OUTWARD: 'outward'
@@ -33,12 +36,7 @@ let targetPosition = 0
 // Get door components
 const doorFrame = app.get('Frame')
 const doorL = app.get('LeftDoor')
-const doorLPivot = app.get('LeftDoorPivot')
 const doorR = app.get('RightDoor')
-const doorRPivot = app.get('RightDoorPivot')
-
-// Add timer constants at the top with other configurations
-const DOOR_OPEN_TIME = 3.0  // Time in seconds door stays open
 
 // Add timer variable with other state variables
 let openTimer = 0
@@ -53,7 +51,6 @@ doorFrame.add(action)
 // Simple toggle action
 action.onTrigger = () => {
 	if (isMoving) return
-
 	isOpen = !isOpen
 	action.label = isOpen ? 'Close' : 'Open'
 	targetPosition = isOpen ? 1 : 0
