@@ -153,8 +153,8 @@ app.on('update', dt => {
 
 		// Move the doors directly
 		const offset = slideDistance * currentPosition
-		doorL.position.x = -offset
-		doorR.position.x = offset
+		doorL.position.x = offset
+		doorR.position.x = -offset
 
 	} else {
 		// Reset door positions when in swing mode
