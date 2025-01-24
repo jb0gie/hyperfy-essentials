@@ -1,6 +1,6 @@
-# 🚪 Door
+# Door
 
-> A powerful HyperScript implementing a door control system for HyperChat, featuring both sliding and swinging door animations.
+> A powerful HyperScript implementing a door for hyperfy
 
 ## 📋 Implementation Overview
 
@@ -78,7 +78,6 @@ it is important to match the names of the components in your blender scene to th
 
 > **Pro Tip**: All numerical values are automatically clamped to prevent unexpected behavior.
 
-
 # 🚪 Setting Up Your Door in Blender
 
 Proper setup in Blender is crucial for this script to function correctly. Follow these steps carefully:
@@ -111,7 +110,6 @@ To achieve the door animation, you need to have a good hierarchy and naming of y
 ### 2. ⬅️ Create the Left Door (Rigid Body / kinematic)
 - **Name**: `LeftDoor`
 - **Description**: This is the left panel of your door. It should be a child of the `Empty` object.
-
 
 ---
 
