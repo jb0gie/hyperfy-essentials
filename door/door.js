@@ -51,10 +51,11 @@ doorFrame.add(action)
 // Simple toggle action
 action.onTrigger = () => {
 	if (isMoving) return
+	isMoving = true
 	isOpen = !isOpen
+	// Update label immediately for user feedback
 	action.label = isOpen ? 'Close' : 'Open'
 	targetPosition = isOpen ? 1 : 0
-	isMoving = true
 	openTimer = 0  // Reset timer when door is manually triggered
 }
 
@@ -178,5 +179,7 @@ app.on('update', dt => {
 	if (Math.abs(currentPosition - targetPosition) < 0.001) {
 		isMoving = false
 		currentPosition = targetPosition
+		// Update action label to match door state
+		action.label = isOpen ? 'Close' : 'Open'
 	}
 })
