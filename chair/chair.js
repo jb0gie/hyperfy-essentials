@@ -1,67 +1,91 @@
-// chair.js 
-// take a load off
+// chair.js - Take a load off
 
-let isSitting = false
-let currentAvatar = null
+const config = app.config
+const vrm = app.get('avatar')
 
-// Get chair components
-const chair = app.get('ComfyChair')
-const sitMarker = app.get('SitMarker')
+// SERVER
+if (world.isServer) {
+	// send initial state
+	const state = {
+		ready: true,
+	}
+	app.state = state
+	app.send('state', state)
 
-// Create interact action
-const action = app.create('action')
-action.label = 'Sit'
-action.position.copy(sitMarker.position)
-action.distance = 1
-chair.add(action)
+	// Get chair components
+	const chair = app.get('Chair')
+	const sitMarker = app.get('SitMarker')
 
-// Track player state
-const playerState = {
-	emote: null,
-	prevEmote: null
+	// Create interact action
+	const action = app.create('action')
+	action.label = 'Sit'
+	action.position.copy(sitMarker.position)
+	action.distance = 2
+	sitMarker.add(action)
+
+	// Track sitting state
+	let isSitting = false
+
+	// Handle sitting/standing
+	action.onTrigger = () => {
+		isSitting = !isSitting
+		action.label = isSitting ? 'Stand' : 'Sit'
+
+		// Send emote state to clients
+		if (isSitting) {
+			app.send('sit', sitMarker.matrixWorld.toArray())
+		} else {
+			app.send('stand')
+		}
+	}
 }
 
-// Handle sitting/standing
-action.onTrigger = () => {
-	const avatar = app.avatar
-	if (!avatar) return
+// CLIENT
+if (world.isClient) {
+	const idleEmoteUrl = config.idleEmote?.url
+	const sitEmoteUrl = config.sitEmote?.url
 
-	if (!isSitting) {
-		// Remember previous emote state
-		playerState.prevEmote = playerState.emote
+	world.attach(vrm)
+	let state = app.state
 
-		// Sit down
-		isSitting = true
-		currentAvatar = avatar
-		action.label = 'Stand'
-
-		// Move avatar to sit marker
-		avatar.matrix.copy(sitMarker.matrixWorld)
-
-		// Play sit animation using asset URL
-		const sitUrl = `asset://${app.config.sitEmote?.url}`
-		avatar.setEmote(sitUrl)
-		playerState.emote = 'sit'
-
+	if (state?.ready) {
+		init()
 	} else {
-		// Stand up
-		isSitting = false
-		action.label = 'Sit'
-
-		// Restore previous emote state or clear
-		if (currentAvatar) {
-			if (playerState.prevEmote) {
-				const prevUrl = `asset://${app.config.idleEmote?.url}`
-				currentAvatar.setEmote(prevUrl)
-			} else {
-				currentAvatar.setEmote(null)
-			}
-		}
-
-		playerState.emote = playerState.prevEmote
-		playerState.prevEmote = null
-		currentAvatar = null
+		world.remove(vrm)
+		app.on('state', _state => {
+			state = _state
+			init()
+		})
 	}
+
+	function init() {
+		world.add(vrm)
+		if (idleEmoteUrl) {
+			vrm.setEmote(`asset://${idleEmoteUrl}`)
+		}
+	}
+
+	// Handle sit/stand events
+	app.on('sit', (matrixData) => {
+		// Move to sit position
+		const matrix = new THREE.Matrix4()
+		matrix.fromArray(matrixData)
+		vrm.matrix.copy(matrix)
+
+		// Play sit animation
+		if (sitEmoteUrl) {
+			vrm.setEmote(`asset://${sitEmoteUrl}`)
+		}
+	})
+
+	app.on('stand', () => {
+		// Return to idle animation
+		if (idleEmoteUrl) {
+			vrm.setEmote(`asset://${idleEmoteUrl}`)
+		} else {
+			vrm.setEmote(null)
+		}
+	})
 }
 
 // Chair config UI
@@ -85,31 +109,16 @@ app.configure(() => {
 			label: 'Emotes',
 		},
 		{
-			key: 'name',
-			type: 'text',
-			label: 'Name',
-		},
-		{
-			key: 'context',
-			type: 'textarea',
-			label: 'Context',
-		},
-		{
-			key: 'url',
-			type: 'text',
-			label: 'URL',
-		},
-		{
-			key: 'emotes',
-			type: 'section',
-			label: 'Emotes',
-		},
-		{
-			key: 'emote0',
+			key: 'sitEmote',
 			type: 'file',
-			label: 'Idle',
-			accept: '.glb',
-			placeholder: 'glb',
+			kind: 'emote',  // Added kind: 'emote' to match emote.js
+			label: 'Sit Animation',
+		},
+		{
+			key: 'idleEmote',
+			type: 'file',
+			kind: 'emote',  // Added kind: 'emote' to match emote.js
+			label: 'Idle Animation (Optional)',
 		}
 	]
 })
@@ -118,4 +127,4 @@ app.configure(() => {
 app.on('config', () => {
 	const distance = parseFloat(app.config.distance) || 2
 	action.distance = Math.min(Math.max(distance, 1), 4)
-}) 
+})

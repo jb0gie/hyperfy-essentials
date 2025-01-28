@@ -26,9 +26,9 @@ app.configure(() => {
 })
 
 const sky = app.create('sky')
-const hdr = app.create('hdr')
+sky.bg = app.config.sky?.url
+sky.hdr = app.config.hdr?.url
 app.add(sky)
-app.add(hdr)
 
 app.update = () => {
   const mode = app.config.switch

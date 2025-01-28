@@ -20,7 +20,7 @@
 {
   "type": "sliding",     // or "swinging"
   "direction": "outward", // or "inward"
-  "slideDistance": 1.8,
+  "slideDistance": 0.65,
   "maxRotation": 45
 }
 ```
@@ -32,6 +32,9 @@ it is important to match the names of the components in your blender scene to th
 - `doorFrame`: Main door structure
 - `doorL`: Left door component
 - `doorR`: Right door component
+
+![](https://imgur.com/gniojmv.png)
+
 
 
 ## ⚙️ Configuration UI
